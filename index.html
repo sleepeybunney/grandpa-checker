@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Grandpa Checker</title>
+        <style>
+            body {
+                font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+                background: #181C14;
+                color: #ECDFCC;
+                padding: 2rem;
+            }
+            div {
+                background: #3C3D37;
+                border-radius: 10px;
+                margin: 2rem;
+                padding: 2rem;
+            }
+            p {
+                margin: 2rem;
+            }
+            div p {
+                margin: 0 2rem;
+            }
+            input {
+                overflow: hidden;
+                margin: 1rem;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Grandpa Checker for Duel Monsters II</h1>
+        <p>When starting a new game in <i>Yu-Gi-Oh! Duel Monsters II: Dark Duel Stories</i>, your save file has a 1/8 chance of being blessed by Solomon Muto. You'll then have a 1/256 chance after every duel to permanently activate Grandpa Mode, which grants an additional card from a unique prize pool whenever you win. Until this happens there is no indication of your Grandpa status anywhere in the game, and the only way to change it is to delete your progress and start again.</p>
+        <p>This tool will read your save file and tell you if it's Grandpa-capable. No data is uploaded to the server.</p>
+
+        <div>
+            <input id="fileInput" type="file" accept="*/*" />
+            <p id="resultNo" style="display: none">❌ This file will never provide Grandpa.</p>
+            <p id="resultDormant" style="display: none">✅ This file has Grandpa potential!</p>
+            <p id="resultActive" style="display: none">✅ Grandpa is already loose on this file!</p>
+        </div>
+
+        <script>
+            const fileInput = document.getElementById("fileInput");
+            const resultNo = document.getElementById("resultNo");
+            const resultDormant = document.getElementById("resultDormant");
+            const resultActive = document.getElementById("resultActive");
+
+            fileInput.addEventListener("change", async (e) => {
+                resultNo.style.display = "none";
+                resultDormant.style.display = "none";
+                resultActive.style.display = "none";
+
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const buffer = await file.arrayBuffer();
+                const bytes = new Uint8Array(buffer);
+                if (bytes.length < 10) return;
+
+                const grandpa = bytes[9];
+                if ((grandpa & 0x80) > 0) resultActive.style.display = "block";
+                else if (grandpa === 0) resultDormant.style.display = "block";
+                else resultNo.style.display = "block";
+            });
+        </script>
+    </body>
+</html>
