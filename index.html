@@ -31,22 +31,25 @@
     <body>
         <h1>Grandpa Checker for Duel Monsters II</h1>
         <p>When starting a new game in <i>Yu-Gi-Oh! Duel Monsters II: Dark Duel Stories</i>, your save file has a 1/8 chance of being blessed by Solomon Muto. You'll then have a 1/256 chance after every duel to permanently activate Grandpa Mode, which grants an additional card from a unique prize pool whenever you win. Until this happens there is no indication of your Grandpa status anywhere in the game, and the only way to change it is to delete your progress and start again.</p>
-        <p>This tool will read your save file and tell you if it's Grandpa-capable. No data is uploaded to the server.</p>
+        <p>This tool will read your save file and tell you if it's Grandpa-capable (note: save file, not save state). No data is uploaded to the server.</p>
 
         <div>
             <input id="fileInput" type="file" accept="*/*" />
-            <p id="resultNo" style="display: none">❌ This file will never provide Grandpa.</p>
+            <p id="resultUnknown" style="display: none">❓ Unknown or corrupted file.</p>
+            <p id="resultNo" style="display: none">❌ This file will never give you Grandpa.</p>
             <p id="resultDormant" style="display: none">✅ This file has Grandpa potential!</p>
             <p id="resultActive" style="display: none">✅ Grandpa is already loose on this file!</p>
         </div>
 
         <script>
             const fileInput = document.getElementById("fileInput");
+            const resultUnknown = document.getElementById("resultUnknown");
             const resultNo = document.getElementById("resultNo");
             const resultDormant = document.getElementById("resultDormant");
             const resultActive = document.getElementById("resultActive");
 
             fileInput.addEventListener("change", async (e) => {
+                resultUnknown.style.display = "none";
                 resultNo.style.display = "none";
                 resultDormant.style.display = "none";
                 resultActive.style.display = "none";
@@ -56,10 +59,15 @@
 
                 const buffer = await file.arrayBuffer();
                 const bytes = new Uint8Array(buffer);
-                if (bytes.length < 10) return;
+                if (bytes.length < 3074) {
+                    resultUnknown.style.display = "block";
+                    return;
+                }
 
                 const grandpa = bytes[9];
-                if ((grandpa & 0x80) > 0) resultActive.style.display = "block";
+                const grandpa2 = bytes[3073]
+                if (grandpa != grandpa2) resultUnknown.style.display = "block";
+                else if ((grandpa & 0x80) > 0) resultActive.style.display = "block";
                 else if (grandpa === 0) resultDormant.style.display = "block";
                 else resultNo.style.display = "block";
             });
