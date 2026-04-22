@@ -59,13 +59,34 @@
 
                 const buffer = await file.arrayBuffer();
                 const bytes = new Uint8Array(buffer);
-                if (bytes.length < 3074) {
+                if (bytes.length < 6140) {
                     resultUnknown.style.display = "block";
                     return;
                 }
 
-                const grandpa = bytes[9];
-                const grandpa2 = bytes[3073]
+                const grandpaExpected = 9;
+                const grandpa2Expected = 3073;
+                const konamiExpected = 6134;
+                const konamiBytes = new Uint8Array([75, 79, 78, 65, 77, 73]);
+
+                let offset = -1;
+                for (let i = konamiExpected; i < bytes.length; i++) {
+                    for (let j = 0; j < konamiBytes.length; j++) {
+                        if (bytes[i + j] != konamiBytes[j]) break;
+                        if (j == konamiBytes.length - 1) {
+                            offset = i - konamiExpected;
+                        }
+                    }
+                    if (offset > -1) break;
+                }
+                
+                if (offset == -1) {
+                    resultUnknown.style.display = "block";
+                    return;
+                }
+
+                const grandpa = bytes[grandpaExpected + offset];
+                const grandpa2 = bytes[grandpa2Expected + offset]
                 if (grandpa != grandpa2) resultUnknown.style.display = "block";
                 else if ((grandpa & 0x80) > 0) resultActive.style.display = "block";
                 else if (grandpa === 0) resultDormant.style.display = "block";
